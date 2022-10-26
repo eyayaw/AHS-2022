@@ -22,7 +22,7 @@ rentals = lapply(c(flist0, flist1), function(f) {
   message("Reading in <", f, "> ...")
   haven::read_dta
   }) # your computer might not handle
-rentals = rbindlist(rentals_rent, use.names=TRUE, fill=TRUE)
+rentals = rbindlist(rentals, use.names=TRUE, fill=TRUE)
 ## drop if the labor market region (erg_amd) or the grid cell (r1_id) is unknown
 rentals = rentals[!(erg_amd==-9 | r1_id == "-9"), ]
 setNames(rentals, 'ajahr', 'year')

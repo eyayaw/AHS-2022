@@ -22,7 +22,7 @@ purchases = lapply(c(flist0, flist1), function(f) {
   message("Reading in <", f, "> ...")
   haven::read_dta
 }) # your computer might not handle
-purchases = rbindlist(purchases_rent, use.names=TRUE, fill=TRUE)
+purchases = rbindlist(purchases, use.names=TRUE, fill=TRUE)
 ## drop if the labor market region (erg_amd) or the grid cell (r1_id) is unknown
 purchases = purchases[!(erg_amd==-9 | r1_id == "-9"), ]
 setNames(purchases, 'ajahr', 'year')
