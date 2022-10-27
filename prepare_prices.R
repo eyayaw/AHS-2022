@@ -1,7 +1,7 @@
 ################################################################################
 # PURCHASES OF FLATS AND HOUSES #
 ## This script accepts the (extracted) raw data that RWI ships and tidy it a bit.
-## apartments for sale (_WK) and houses for sale (_HK) are binded together into purchases.dta
+## apartments for sale (_WK) and houses for sale (_HK) are bound together into purchases.dta
 ################################################################################
 
 ## required libraries

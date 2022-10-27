@@ -2,7 +2,7 @@
 *****************************
 
 // This script accepts the (extracted) raw data that RWI ships and tidy it a bit.
-// apartments for rent (_WM) and houses for rent (_HM) are binded together into rentals.dta
+// apartments for rent (_WM) and houses for rent (_HM) are bound together into rentals.dta
 
 set more off
 
@@ -10,7 +10,7 @@ set more off
 **************
 
 capture log close
-log using "prepare_rent.log", replace
+log using "prepare_rents.log", replace
 
 // specify the working directory to be the directory where the raw data lives in
 cd "F:/Allgemein/Data/RWI Regional Data/Immoscout/2022/extracted/"

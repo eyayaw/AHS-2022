@@ -1,7 +1,7 @@
 ################################################################################
 # RENTS OF FLATS AND HOUSES #
 ## This script accepts the (extracted) raw data that RWI ships and tidy it a bit.
-## apartments for rent (_WM) and houses for rent (_HM) are binded together into rentals.dta
+## apartments for rent (_WM) and houses for rent (_HM) are bound together into rentals.dta
 ################################################################################
 
 ## required libraries

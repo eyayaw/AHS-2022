@@ -1,13 +1,13 @@
 // PURCHASES OF FLATS AND HOUSES
 ********************************
 // This script accepts the (extracted) raw data that RWI ships and tidy it a bit.
-// apartments for sale (_WK) and houses for sale (_HK) are binded together into purchases.dta
+// apartments for sale (_WK) and houses for sale (_HK) are bound together into purchases.dta
 
 
 //Data Shaping
 **************
 capture log close
-log using "prepare_price.log", replace
+log using "prepare_prices.log", replace
 
 // specify the working directory to be the directory where the raw data lives in
 cd "F:/Allgemein/Data/RWI Regional Data/Immoscout/2022/extracted/"
