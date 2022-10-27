@@ -47,7 +47,7 @@ rentals[, lrent:=log(mietekalt)
          ][,lrentsqm:=log(rentsqm)
            ][,region:=as.factor(erg_amd)
              ][,nksqm:=nebenkosten/wohnflaeche
-               ][,type:=group(immobilientyp)
+               ][,type:=as.factor(immobilientyp)
                  ][,immobilientyp:=type-1
                    ][,type:=NULL]
 

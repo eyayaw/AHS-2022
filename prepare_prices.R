@@ -55,7 +55,7 @@ purchases[, lprice:=log(kaufpreis)
             ][,lpricesqm:=log(pricesqm)
               ][,region:=as.factor(erg_amd)
                 ][,nksqm:=nebenkosten/wohnflaeche
-                  ][,type:=group(immobilientyp)
+                  ][,type:=as.factor(immobilientyp)
                     ][,immobilientyp:=type-1
                       ][,type:=NULL]
 
