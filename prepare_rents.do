@@ -35,7 +35,7 @@ foreach x of local flistHM {
 // read the files in and append them
 local counter = 0
 foreach f of local flistwm flisthm {
-disp "Reading in <`f'> ..."
+disp "Reading <`f'> ..."
 if `counter' == 0 {
 use "`f'", clear
 }

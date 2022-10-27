@@ -19,7 +19,7 @@ flist1 = dir("HK_SUF_ohneText", pattern = ".dta$", full.names = TRUE)
 
 ## read in files and bind them
 purchases = lapply(c(flist0, flist1), function(f) {
-  message("Reading in <", f, "> ...")
+  message("Reading <", f, "> ...")
   haven::read_dta
 }) # your computer might not handle
 purchases = rbindlist(purchases, use.names=TRUE, fill=TRUE)
