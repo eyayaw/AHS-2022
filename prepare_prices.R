@@ -5,11 +5,13 @@
 ################################################################################
 
 ## required libraries
-pkgs = c('haven', 'data.table', 'fixest', 'geodist')
-if (!requireNamespace(pkg)) {
-  install.packages(pkg)
-} else {
-  library(pkg, character.only = TRUE)
+pkgs = c("haven", "data.table", "fixest", "geodist")
+for (pkg in pkgs) {
+  if (!requireNamespace(pkg)) {
+    install.packages(pkg)
+  } else {
+    library(pkg, character.only = TRUE)
+  }
 }
 
 ## Data cleaning ----

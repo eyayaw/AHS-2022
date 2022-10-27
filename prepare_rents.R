@@ -5,13 +5,14 @@
 ################################################################################
 
 ## required libraries
-pkgs = c('haven', 'data.table', 'fixest', 'geodist')
-if (!requireNamespace(pkg)) {
-  install.packages(pkg)
-} else {
-  library(pkg, character.only = TRUE)
+pkgs = c("haven", "data.table", "fixest", "geodist")
+for (pkg in pkgs) {
+  if (!requireNamespace(pkg)) {
+    install.packages(pkg)
+  } else {
+    library(pkg, character.only = TRUE)
+  }
 }
-
 ## Data cleaning ----
 # list of all the .dta files in each folder (apartments for rent, and houses for rent)
 flist0 = dir("WM_SUF_ohneText", pattern = ".dta$", full.names = TRUE)
