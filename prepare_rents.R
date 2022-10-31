@@ -13,25 +13,40 @@ for (pkg in pkgs) {
     library(pkg, character.only = TRUE)
   }
 }
+
 ## Data cleaning ----
 # list of all the .dta files in each folder (apartments for rent, and houses for rent)
-flist0 = dir("WM_SUF_ohneText", pattern = ".dta$", full.names = TRUE)
-flist1 = dir("HM_SUF_ohneText", pattern = ".dta$", full.names = TRUE)
+flist0 = dir("Stata/WM_SUF_ohneText", pattern=".dta$", full.names=TRUE)
+flist1 = dir("Stata/HM_SUF_ohneText", pattern=".dta$", full.names=TRUE)
+flist = list(wk=flist0, hk=flist1)
 
 ## read in files and bind them
-rentals = lapply(c(flist0, flist1), function(f) {
+rentals = vector('list', length(flist))
+names(rentals) = names(flist)
+
+for (i in seq_along(rentals)) {
+rentals[[i]] = lapply(flist[[i]], function(f) {
   message("Reading <", f, "> ...")
-  haven::read_dta
-  }) # your computer might not handle
+  haven::read_dta(f)
+})
+}
+
+# stacking up -- may break your machine
+# add "R_MAX_VSIZE=100Gb" to your .Renviron, you can open it with usethis::edit_r_environ()
+
+# stacking up files of apartments, and homes separately
+rentals = lapply(rentals, \(.l) rbindlist(.l, use.names=TRUE, fill=TRUE))
+# stacking apartments, and homes together into one big data.frame
 rentals = rbindlist(rentals, use.names=TRUE, fill=TRUE)
+
 ## drop if the labor market region (erg_amd) or the grid cell (r1_id) is unknown
 rentals = rentals[!(erg_amd==-9 | r1_id == "-9"), ]
-setNames(rentals, 'ajahr', 'year')
 
 vars = c(
   "obid", "mietekalt", "nebenkosten", "baujahr", "wohnflaeche", "etage",
-  "anzahletagen", "zimmeranzahl", "immobilientyp", "year", "balkon", "garten",
-  "keller", "ausstattung", "heizungsart", "kategorie_Haus", "kategorie_Wohnung"
+  "anzahletagen", "zimmeranzahl", "immobilientyp", "ajahr", "amonat", "ejahr",
+  "emonat", "balkon", "garten","keller", "ausstattung", "heizungsart",
+  "kategorie_Haus", "kategorie_Wohnung"
 )
 
 rentals = rentals[, c(vars, "erg_amd", "r1_id"), with=FALSE]
@@ -39,15 +54,18 @@ rentals[, (vars) := lapply(.SD, function(x) fifelse(x<0, NA, x)), .SDcols=(vars)
 # summary of missing values
 rentals[, lapply(.SD, function(x) sum(is.na(x)))]
 
-## variable translation and labeling
+## for variable translation and labeling
 var_label = read.csv("variable-metadata.csv")
+# translate variable names
+setnames(rentals, 'ajahr', 'year')
+setnames(rentals, var_label$var_de, var_label$var_en)
 
 ## define new vars
 rentals[, lrent:=log(mietekalt)
-       ][, rentsqm:=mietekalt/wohnflaeche
-         ][,lrentsqm:=log(rentsqm)
+       ][, rent_sqm:=mietekalt/wohnflaeche
+         ][,lrent_sqm:=log(rentsqm)
            ][,region:=as.factor(erg_amd)
-             ][,nksqm:=nebenkosten/wohnflaeche
+             ][,utilities_sqm:=nebenkosten/wohnflaeche
                ][,type:=as.factor(immobilientyp)
                  ][,immobilientyp:=type-1
                    ][,type:=NULL]
@@ -60,7 +78,7 @@ names(amr)[grepl("^x$|^y$", names(amr))] = c('d_long', 'd_lat')
 rentals = merge(rentals, amr, by="erg_amd")
 rentals[, dist_cbd:=geodist(cbind(o_lat, o_long, d_lat, d_long), measure = "geodesic")
        ][,ldist:=log(dist_cbd)] # log of distance to CBD
-setnames(rentals, var_label$var_de, var_label$var_en)
+
 rm(grid, amr)
 
 ## Generate summary statistics table
@@ -73,15 +91,15 @@ rentals[, .(rentsqm, dist_cbd, floorspace, rooms, type, balcony, garden, basemen
 
 ## Set missings to zero and control for missings by M`x'
 vars = c(
-  "obid", "rent", "utilities", "constr_year", "floorspace", "floor","number_floors",
-  "rooms", "type", "year", "balcony", "garden", "basement","rentsqm", "utilitiessqm"
+  "rent", "rent_sqm", "utilities_sqm", "utilities", "constr_year", "floorspace",
+  "floor","number_floors", "rooms","type", "year", "month", "balcony", "garden", "basement"
 )
 
 # M`x' = 1 if `x' is missing
 rentals[, paste0("M",vars) := lapply(.SD, function(x) fifelse(is.na(x), 1, 0)),.SDcols=(vars)]
 
 # Ersetze missings durch 0, aber kontrolliere für missing über M`x'
-rentals[, (vars):=lapply(.SD, function(x) fifelse(is.na(x), 0)),.SDcols=(vars)]
+rentals[, (vars):=lapply(.SD, function(x) fifelse(is.na(x), 0, x)),.SDcols=(vars)]
 # Wir nehmen den zeitinvarianten Durchschnitt
 # D`x' = `x' minus national average
 rentals[,paste0("D", vars):=lapply(.SD, function(x) x-mean(x, na.rm=TRUE)), .SDcols=(vars)]
@@ -113,4 +131,3 @@ rentals[, paste0("D", vars) := Map(
 
 
 write_dta(rentals, "rentals.dta")
-

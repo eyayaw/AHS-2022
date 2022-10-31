@@ -16,18 +16,29 @@ for (pkg in pkgs) {
 
 ## Data cleaning ----
 # list of all the .dta files in each folder (apartments for sale,and houses for sale)
-flist0 = dir("WK_SUF_ohneText", pattern = ".dta$", full.names = TRUE)
-flist1 = dir("HK_SUF_ohneText", pattern = ".dta$", full.names = TRUE)
+flist0 = dir("Stata/WK_SUF_ohneText", pattern=".dta$", full.names=TRUE)
+flist1 = dir("Stata/HK_SUF_ohneText", pattern=".dta$", full.names=TRUE)
+flist = list(wk=flist0, hk=flist1)
 
 ## read in files and bind them
-purchases = lapply(c(flist0, flist1), function(f) {
+purchases = vector('list', 2L)
+for (i in seq_along(purchases)) {
+purchases[[i]] = lapply(flist[[i]], function(f) {
   message("Reading <", f, "> ...")
-  haven::read_dta
-}) # your computer might not handle
+  haven::read_dta(f)
+})
+}
+
+# stacking up -- may break your machine
+# add "R_MAX_VSIZE=100Gb" to your .Renviron, you can open it with usethis::edit_r_environ()
+
+# stacking up files of apartments, and homes separately
+purchases = lapply(purchases, \(.l) rbindlist(.l, use.names=TRUE, fill=TRUE))
+# stacking apartments, and homes together into one data frame
 purchases = rbindlist(purchases, use.names=TRUE, fill=TRUE)
+
 ## drop if the labor market region (erg_amd) or the grid cell (r1_id) is unknown
 purchases = purchases[!(erg_amd==-9 | r1_id == "-9"), ]
-setNames(purchases, 'ajahr', 'year')
 
 vars = c(
   "obid", "nebenkosten", "kaufpreis", "mieteinnahmenpromonat", "heizkosten", "baujahr",
@@ -48,15 +59,13 @@ purchases[, (vars) := lapply(.SD, function(x) fifelse(x<0, NA, x)), .SDcols=(var
 # summary of missing values
 purchases[, lapply(.SD, function(x) sum(is.na(x)))]
 
-## variable translation and labeling
-var_label = read.csv("variable-metadata.csv")
 
 ## define new vars
 purchases[, lprice:=log(kaufpreis)
-          ][, pricesqm:=kaufpreis/wohnflaeche
-            ][,lpricesqm:=log(pricesqm)
+          ][, price_sqm:=kaufpreis/wohnflaeche
+            ][,lprice_sqm:=log(pricesqm)
               ][,region:=as.factor(erg_amd)
-                ][,nksqm:=nebenkosten/wohnflaeche
+                ][,utilities_sqm:=nebenkosten/wohnflaeche
                   ][,type:=as.factor(immobilientyp)
                     ][,immobilientyp:=type-1
                       ][,type:=NULL]
@@ -69,26 +78,27 @@ names(amr)[grepl("^x$|^y$", names(amr))] = c('d_long', 'd_lat')
 purchases = merge(purchases, amr, by="erg_amd")
 purchases[, dist_cbd:=geodist(cbind(o_lat, o_long, d_lat, d_long), measure = "geodesic")
 ][,ldist:=log(dist_cbd)] # log of distance to CBD
-setnames(purchases, var_label$var_de, var_label$var_en)
 rm(grid, amr)
 
-## Generate summary statistics table
-purchases[, .(rentsqm, dist_cbd, floorspace, rooms, type, balcony, garden, basement, heating_type)
-][, lapply(.SD, function(x) {
-  list(count = length(x),mean = mean(x, na.rm = TRUE),sd = sd(x, na.rm = TRUE),
-       p10 = quantile(x, 0.1, na.rm = TRUE),p90 = quantile(x, 0.9, na.rm = TRUE))
-})]
-
+## for variable translation and labeling
+var_label = read.csv("variable-metadata.csv")
+# translate variable names
+setnames(purchases, c('ajahr', 'amonat'), c('year', 'month'))
+setnames(purchases, var_label$var_de, var_label$var_en)
 
 ## Set missings to zero and control for missings by M`x'
-vars = c("kaufpreis", "priceqm", "nebenkosten", "nkqm", "baujahr", "wohnflaeche", "etage", "anzahletagen", "zimmeranzahl", "schlafzimmer", "badezimmer", "immobilientyp", "ajahr", "balkon", "einbaukueche", "foerderung", "garten", "keller", "ausstattung", "heizungsart", "kategorie_Haus", "kategorie_Wohnung", "objektzustand")
-
+vars = c(
+  "price", "price_sqm", "utilities", "utilities_sqm", "constr_year", "floor_space",
+  "floor", "num_floors", "num_rooms", "num_bedrooms", "num_bathrooms", "type", "balcony",
+  "kitchen", "public_housing_cert", "garden", "basement", "equipment", "heating_type",
+  "house_type", "flat_type", "condition", "year", "month"
+)
 
 # M`x' = 1 if `x' is missing
 purchases[, paste0("M",vars) := lapply(.SD, function(x) fifelse(is.na(x), 1, 0)),.SDcols=(vars)]
 
 # Ersetze missings durch 0, aber kontrolliere für missing über M`x'
-purchases[, (vars):=lapply(.SD, function(x) fifelse(is.na(x), 0)),.SDcols=(vars)]
+purchases[, (vars):=lapply(.SD, function(x) fifelse(is.na(x), 0, x)),.SDcols=(vars)]
 # Wir nehmen den zeitinvarianten Durchschnitt
 # D`x' = `x' minus national average
 purchases[,paste0("D", vars):=lapply(.SD, function(x) x-mean(x, na.rm=TRUE)), .SDcols=(vars)]
@@ -117,6 +127,13 @@ purchases[, paste0("D", vars) := Map(
   .SD, vars),
   .SDcols = paste0("D", vars)
 ]
+
+## Generate summary statistics table
+purchases[, .(rentsqm, dist_cbd, floorspace, rooms, type, balcony, garden, basement, heating_type)
+][, lapply(.SD, function(x) {
+  list(count = length(x),mean = mean(x, na.rm = TRUE),sd = sd(x, na.rm = TRUE),
+       p10 = quantile(x, 0.1, na.rm = TRUE),p90 = quantile(x, 0.9, na.rm = TRUE))
+})]
 
 
 write_dta(purchases, "purchases.dta")
