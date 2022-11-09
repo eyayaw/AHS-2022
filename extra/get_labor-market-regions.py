@@ -29,7 +29,7 @@ for row in regions:
   for d in row[2].split(","):
     out.append([*row[:-1], d.strip()])
 
-with open('extra/Labor-Market-Regions_Kostfeld-Werner-2012.csv', 'w') as f:
+with open('extra/Labor-Market-Regions_Kosfeld-Werner-2012.csv', 'w') as f:
     csvWriter = csv.writer(f, delimiter=",")
     for row in [*[header], *out]:
         csvWriter.writerow(row)

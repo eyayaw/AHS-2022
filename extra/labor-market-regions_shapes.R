@@ -1,12 +1,12 @@
 library(sf)
 
 # district shape
-districts = st_read("admin-areas/districts_bkg.gpkg")
+districts = st_read("extra/admin-areas/districts_bkg.gpkg")
 districts$state = NULL
 
 # labor market regions (LMRs)
 lmrs = read.csv(
-  "extra/labor-market-regions_Kosfeld-Werner-2012_2019.gpkgLabor-Market-Regions_Kostfeld-Werner-2012.csv",
+  "extra/Labor-Market-Regions_Kosfeld-Werner-2012.csv",
   col.names = c("amr_id", "amr_name", "district"), row.names = NULL
 )
 
@@ -64,7 +64,7 @@ stopifnot(
 )
 
 # labor market regions updated for the 2019 district border definitions
-write.csv(new_lmrs, "extra/Labor-Market-Regions_Kostfeld-Werner-2012_2019.csv",
+write.csv(new_lmrs, "extra/Labor-Market-Regions_Kosfeld-Werner-2012_2019.csv",
   quote = FALSE, row.names = FALSE
 )
 
@@ -82,7 +82,9 @@ lmrs_shape = districts |>
 names(lmrs_shape)[match(c("did", "name"), names(lmrs_shape))] = c("district_id", "district_name")
 
 # write the shapes
-st_write(lmrs_shape, 'extra/labor-market-regions_Kosfeld-Werner-2012_2019.gpkg', append=FALSE)
+st_write(lmrs_shape,
+  "extra/Labor-Market-Regions_Kosfeld-Werner-2012_2019.gpkg", append = FALSE
+)
 
 
 # ------------------------------------------------------------------------------
