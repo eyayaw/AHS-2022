@@ -1,10 +1,12 @@
 # [AHS (2022)](https://doi.org/10.1016/j.regsciurbeco.2022.103836)
-This repo contains scripts that prepare the raw [RWI-GEO-RED](https://www.rwi-essen.de/en/research-advice/further/research-data-center-ruhr-fdz/data-sets/rwi-geo-red/x-real-estate-data-and-price-indices) data for use in [Ahlfeldt, Heblich, and Seidel (2022)](https://doi.org/10.1016/j.regsciurbeco.2022.103836) algorithim. 
+
+This repo contains scripts that prepare the raw [RWI-GEO-RED](https://www.rwi-essen.de/en/research-advice/further/research-data-center-ruhr-fdz/data-sets/rwi-geo-red/x-real-estate-data-and-price-indices) data for use in [Ahlfeldt, Heblich, and Seidel (2022)](https://doi.org/10.1016/j.regsciurbeco.2022.103836) algorithm.
 
 ## Instruction
-1. Unzip/extract the zipped data that comes from RWI FDZ (which you may have downloaded as `HiDrive.zip`) as shown in below:
 
-```bash
+1.  Unzip/extract the zipped data that comes from RWI FDZ (which you may have downloaded as `HiDrive.zip`) as below:
+
+``` bash
 ├── csv
 │   ├── HK_SUF_csv
 │   ├── HM_SUF_csv
@@ -49,4 +51,7 @@ This repo contains scripts that prepare the raw [RWI-GEO-RED](https://www.rwi-es
     ├── WK_SUF.zip
     └── WM_SUF.zip
 ```
-2. Run `prepare_rents.do` and `prepare_prices.do`. 
+
+2.  Run `prepare_rents.do` and `prepare_prices.do`.
+
+Additionally, in the `extra/` folder, labor market regions ([Kosfeld and Werner (2012)](https://link.springer.com/article/10.1007/s13147-011-0137-8 "German Labour Markets—New Delineation after the Reforms of German District Boundaries 2007–2011")), (1kmx1km) grid, municipality, and district information are provided. Note: the Kosfeld and Werner (2012)'s labor market regions are updated for the 2019 (end of the year) administrative structure ([Verwaltungsgliederung am 31.12.2019](https://www.destatis.de/DE/Themen/Laender-Regionen/Regionales/Gemeindeverzeichnis/Administrativ/Archiv/Verwaltungsgliederung/31122019_Jahr.html)) of districts.
